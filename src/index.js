@@ -7,29 +7,52 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Define the prompt for the Gemini API
 const ANALYSIS_PROMPT = `
-Provide a a strucuted ouput for the image input which is a bill.
-The bill is a restaurant bill and contains food and drinks items.
-The strucuted json output should be
-\`\`\`json
+You are given an image of a restaurant bill that includes food and drink items.
+
+Instructions:
+
+Extract all ordered items under the items array.
+For each item:
+Extract the full item name. If the item name spills onto the next line (e.g., "Paneer Aloo Mattar" on one line and "Sabji" on the next), merge them into a single name.
+Extract the quantity. If not explicitly mentioned, default to 1. If in the format Beer 6 1200, interpret it as 6 beers costing 1200 total, and set price as 1200 / 6 = 200.00.
+Extract the total item price (before any tax or service charge).
+Detect and apply any discounts shown (e.g., minus -, strikethrough, or labeled as discount). Apply the discount directly on the item’s total price.
+Calculate the final per-unit price after discount:
+price = (item total - discount) / quantity.
+Apply all discounts before price extraction. Do not list separate discount lines. Instead, reflect the discounted amount in the item's price field directly.
+
+Tax Field:
+Include all service charges, tips, VAT, GST, or surcharges under the tax field.
+If multiple components are listed separately, sum them.
+
+Subtotal:
+Sum of (price × quantity) for all items after discount, but before tax.
+
+Total:
+Final billed amount paid, including tax and all charges.
+
+Validation:
+Ensure: subtotal + tax == total (or within a rounding error of ±0.01).
+If mismatch is detected, attempt to re-check discount and price calculations.
+Output format:
+
 {
-items: [
-{
-name: "Item Name",
-price: 123.45,
-quantity: 1
-},
-{
-name: "Item Name",
-price: 678.90,
-quantity: 2
+  "items": [
+    {
+      "name": "Item Name",
+      "price": 123.45,
+      "quantity": 1
+    },
+    {
+      "name": "Item Name",
+      "price": 200.00,
+      "quantity": 6
+    }
+  ],
+  "subtotal": 1345.67,
+  "tax": 123.45,
+  "total": 1469.12
 }
-],
-total: 1234.56
-tax: 123.45
-}
-\`\`\`
-  
-Here the tax should include all the taxes applied to each item and the total amount including taxes and tips and service charges etc. Any percentage based addition on the whole value like VAT etc.
 `;
 
 // Allowed origins for CORS
