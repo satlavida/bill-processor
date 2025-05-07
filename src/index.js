@@ -32,16 +32,33 @@ tax: 123.45
 Here the tax should include all the taxes applied to each item and the total amount including taxes and tips and service charges etc. Any percentage based addition on the whole value like VAT etc.
 `;
 
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  'http://localhost:8000',            // Development environment
+  'https://www.satyajeetnigade.in'    // Production environment
+];
+
 export default {
   async fetch(request, env, ctx) {
+    // Get the request origin
+    const origin = request.headers.get("Origin") || "";
+    
+    // Check if the origin is allowed
+    const allowedOrigin = ALLOWED_ORIGINS.find(allowed => origin.includes(allowed)) || null;
+    
     // Handle CORS preflight requests
     if (request.method === "OPTIONS") {
-      return handleCORS();
+      return handleCORS(allowedOrigin);
     }
 
     // Only accept POST requests
     if (request.method !== "POST") {
       return new Response("Method not allowed", { status: 405 });
+    }
+    
+    // If origin is not allowed, reject the request
+    if (!allowedOrigin) {
+      return new Response("Not allowed", { status: 403 });
     }
 
     try {
@@ -71,7 +88,7 @@ export default {
         return new Response(result, {
           headers: {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "https://www.satyajeetnigade.in",
+            "Access-Control-Allow-Origin": allowedOrigin,
             "Access-Control-Allow-Methods": "POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type, Origin"
           }
@@ -142,11 +159,12 @@ async function processImageWithGemini(base64Image, mimeType, apiKey) {
 
 /**
  * Handle CORS preflight requests
+ * @param {string} origin - The allowed origin for the request
  */
-function handleCORS() {
+function handleCORS(origin) {
   return new Response(null, {
     headers: {
-      "Access-Control-Allow-Origin": "https://www.satyajeetnigade.in",
+      "Access-Control-Allow-Origin": origin || "",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Origin",
       "Access-Control-Max-Age": "86400"
