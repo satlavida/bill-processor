@@ -16,10 +16,17 @@ For each item:
 Extract the full item name. If the item name spills onto the next line (e.g., "Paneer Aloo Mattar" on one line and "Sabji" on the next), merge them into a single name.
 Extract the quantity. If not explicitly mentioned, default to 1. If in the format Beer 6 1200, interpret it as 6 beers costing 1200 total, and set price as 1200 / 6 = 200.00.
 Extract the total item price (before any tax or service charge).
-Detect and apply any discounts shown (e.g., minus -, strikethrough, or labeled as discount). Apply the discount directly on the item’s total price.
-Calculate the final per-unit price after discount:
+Detect any discounts:
+If the bill shows an overall flat discount, add it as a separate item with a negative price.
+If discounts apply only to certain items, keep their final price after discount and include a discount field with:
+  discount: {
+    value: <discount amount or percentage>,
+    discountType: "flat" | "percentage"
+  }
+For percentage discounts, value is the percent off. For flat discounts, value is the amount subtracted.
+Calculate the final per-unit price after subtracting the discount:
 price = (item total - discount) / quantity.
-Apply all discounts before price extraction. Do not list separate discount lines. Instead, reflect the discounted amount in the item's price field directly.
+Apply item-level discounts before computing price.
 
 Tax Field:
 Include all service charges, tips, VAT, GST, or surcharges under the tax field.
@@ -41,12 +48,16 @@ Output format:
     {
       "name": "Item Name",
       "price": 123.45,
-      "quantity": 1
+      "quantity": 1,
+      "discount": {
+        "value": 10,
+        "discountType": "percentage"
+      }
     },
     {
-      "name": "Item Name",
-      "price": 200.00,
-      "quantity": 6
+      "name": "Discount",
+      "price": -5.00,
+      "quantity": 1
     }
   ],
   "subtotal": 1345.67,
