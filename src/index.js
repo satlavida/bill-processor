@@ -184,7 +184,7 @@ function buildOpenRouterHeaders(apiKey) {
 
 function buildOpenRouterRequest(prompt, base64Image, mimeType) {
   return {
-    model: "google/gemini-2.0-flash-001",
+    model: "google/gemini-2.5-flash-lite",
     messages: [
       {
         role: "user",
