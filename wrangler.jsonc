@@ -6,7 +6,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "bill-processor",
 	"main": "src/index.js",
-	"compatibility_date": "2025-04-01",
+	"compatibility_date": "2025-12-01",
 	"observability": {
 		"enabled": true
 	}
@@ -27,9 +27,6 @@
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
-	"vars": {
-		"OPENROUTER_API_KEY": ""
-	},
 	/**
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
